@@ -143,17 +143,39 @@ from the inputs given; describe fit qualitatively (e.g. "strong fit",
                 ],
             }
 
+            import time
+
+            # Google's shared free-tier capacity occasionally returns a
+            # transient 503 ("model currently experiencing high demand").
+            # Retry a couple of times with backoff, then fall back to the
+            # lighter Flash-Lite alias, before giving up — this prevents a
+            # single momentary spike from derailing a live demo.
+            def _generate_with_resilience():
+                models_to_try = ["gemini-flash-latest", "gemini-flash-lite-latest"]
+                last_error = None
+                for model_name in models_to_try:
+                    for attempt in range(2):  # 2 tries per model
+                        try:
+                            return client.models.generate_content(
+                                model=model_name,
+                                contents=prompt,
+                                config=types.GenerateContentConfig(
+                                    temperature=0.2,
+                                    response_mime_type="application/json",
+                                    response_schema=response_schema,
+                                ),
+                            )
+                        except Exception as e:
+                            last_error = e
+                            if "503" in str(e) or "UNAVAILABLE" in str(e):
+                                time.sleep(2 * (attempt + 1))  # 2s, then 4s
+                                continue
+                            raise  # non-503 errors: don't waste retries, fail fast
+                raise last_error
+
             try:
                 with st.spinner("Analyzing profile and matching to DepEd tracks..."):
-                    response = client.models.generate_content(
-                        model="gemini-flash-latest",  # rolling alias — see README note
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            temperature=0.2,  # low temperature: favor consistency over creativity
-                            response_mime_type="application/json",
-                            response_schema=response_schema,
-                        ),
-                    )
+                    response = _generate_with_resilience()
                 result = response.parsed  # structured dict matching response_schema
                 st.success("Analysis complete!")
 
