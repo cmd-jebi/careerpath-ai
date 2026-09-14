@@ -57,7 +57,7 @@ if st.button("Generate Career Pathway Recommendations") and api_key:
         st.error("Please provide realistic interest responses before generating recommendations.")
     else:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
 
         prompt = f"""
         Act as a Philippine High School Guidance Counselor. Analyze this Grade 10 student:
