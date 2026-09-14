@@ -30,14 +30,14 @@ def create_pdf_report(scores: dict, result: dict) -> bytes:
     pdf.set_font("Helvetica", "B", 12)
     pdf.cell(0, 8, f"Primary Recommendation: {_safe(result['primary_track'])} - {_safe(result['primary_cluster'])}", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", "", 9)
-    pdf.multi_cell(0, 5, _safe(result["primary_rationale"]))
+    pdf.multi_cell(0, 5, _safe(result["primary_rationale"]), wrapmode="CHAR")
     pdf.ln(3)
 
     if result.get("doorway_option"):
         pdf.set_font("Helvetica", "B", 11)
         pdf.cell(0, 6, "Doorway Option:", new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", "", 9)
-        pdf.multi_cell(0, 5, _safe(result["doorway_option"]))
+        pdf.multi_cell(0, 5, _safe(result["doorway_option"]), wrapmode="CHAR")
         pdf.ln(3)
 
     def _section(title, items):
@@ -45,7 +45,7 @@ def create_pdf_report(scores: dict, result: dict) -> bytes:
         pdf.cell(0, 6, title, new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", "", 9)
         for item in items:
-            pdf.multi_cell(0, 5, _safe(f"- {item}"))
+            pdf.multi_cell(0, 5, _safe(f"- {item}"), wrapmode="CHAR")
         pdf.ln(2)
 
     _section("Prerequisite Gaps to Review:", result["prerequisite_gaps"])
@@ -61,6 +61,7 @@ def create_pdf_report(scores: dict, result: dict) -> bytes:
         "track placement order and has not been independently validated for "
         "this purpose or audience. Please review these results with your "
         "designated Guidance Counselor.",
+        wrapmode="CHAR",
     )
 
     return bytes(pdf.output())
