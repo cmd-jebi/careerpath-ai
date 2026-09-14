@@ -217,10 +217,17 @@ from the inputs given; describe fit qualitatively (e.g. "strong fit",
 
 # --- STEP 6: PDF EXPORT BUTTON ---
 if "result" in st.session_state:
-    pdf_bytes = create_pdf_report(st.session_state["scores"], st.session_state["result"])
-    st.download_button(
-        label="📥 Download Full Guidance Summary (PDF)",
-        data=pdf_bytes,
-        file_name="CareerPath_AI_Guidance_Report.pdf",
-        mime="application/pdf",
-    )
+    try:
+        pdf_bytes = create_pdf_report(st.session_state["scores"], st.session_state["result"])
+        st.download_button(
+            label="📥 Download Full Guidance Summary (PDF)",
+            data=pdf_bytes,
+            file_name="CareerPath_AI_Guidance_Report.pdf",
+            mime="application/pdf",
+        )
+    except Exception as e:
+        st.warning(
+            "Your recommendation is ready above, but the PDF export hit a "
+            "snag. You can still screenshot or copy the results on this page."
+        )
+        st.caption(f"Technical detail (for developers): {e}")
